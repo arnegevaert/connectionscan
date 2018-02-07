@@ -1,0 +1,13 @@
+{
+    "stops": ["s", "x", "y", "z", "t"],
+    "connections": [
+        {"dep": {"stop": "s", "time": 6}, "arr": {"stop": "x", "time": 7}},
+        {"dep": {"stop": "s", "time": 5}, "arr": {"stop": "t", "time": 14}},
+        {"dep": {"stop": "s", "time": 7}, "arr": {"stop": "z", "time": 8}},
+        {"dep": {"stop": "x", "time": 8}, "arr": {"stop": "y", "time": 9}},
+        {"dep": {"stop": "x", "time": 8}, "arr": {"stop": "t", "time": 13}},
+        {"dep": {"stop": "y", "time": 10}, "arr": {"stop": "t", "time": 11}},
+        {"dep": {"stop": "z", "time": 9}, "arr": {"stop": "t", "time": 12}}
+    ],
+    "footpaths": {}
+}
