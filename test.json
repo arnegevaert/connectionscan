@@ -10,10 +10,10 @@
         {"id": "g", "connections": [{"dep": {"stop": "z", "time": 9}, "arr": {"stop": "t", "time": 12}}]}
     ],
     "footpaths": {
-        "s": [{"arr": "s", "dur": 1}],
-        "x": [{"arr": "x", "dur": 1}],
-        "y": [{"arr": "y", "dur": 1}],
-        "z": [{"arr": "z", "dur": 1}],
-        "t": [{"arr": "t", "dur": 1}]
+        "s": [{"arr": "s", "dur": 0}],
+        "x": [{"arr": "x", "dur": 0}],
+        "y": [{"arr": "y", "dur": 0}],
+        "z": [{"arr": "z", "dur": 0}],
+        "t": [{"arr": "t", "dur": 0}]
     }
 }

@@ -21,12 +21,13 @@ class CSA {
 
     getWalkingDistance(dep, arr) {
         let footpaths = this.footpaths[dep];
+        let result = Infinity;
         footpaths.forEach(fp => {
             if (fp.arr === arr) {
-                return fp.dur;
+                result = fp.dur;
             }
         });
-        return Infinity;
+        return result;
     }
 
     shiftVector(vector) {
@@ -57,7 +58,7 @@ class CSA {
         let i = profile[depStop].length - 1;
         while (i >= 0) {
             if (profile[depStop][i].depTime > depTime) {
-                return profile[depStop][i].arrTimes;
+                return profile[depStop][i].arrTimes.slice(); // Return a copy of the array
             }
             i--;
         }
@@ -105,4 +106,4 @@ class CSA {
 }
 
 let csa = new CSA('test.json', 10);
-console.log(JSON.stringify(csa.calculateProfile("t", 5)));
+console.log(JSON.stringify(csa.calculateProfile("t", 5), null, 4));
