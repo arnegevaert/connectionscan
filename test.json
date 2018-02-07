@@ -1,13 +1,13 @@
 {
     "stops": ["s", "x", "y", "z", "t"],
     "trips": [
-        {"name": "a", "connections": [{"dep": {"stop": "s", "time": 6}, "arr": {"stop": "x", "time": 7}}]},
-        {"name": "b", "connections": [{"dep": {"stop": "s", "time": 5}, "arr": {"stop": "t", "time": 14}}]},
-        {"name": "c", "connections": [{"dep": {"stop": "s", "time": 7}, "arr": {"stop": "z", "time": 8}}]},
-        {"name": "d", "connections": [{"dep": {"stop": "x", "time": 8}, "arr": {"stop": "y", "time": 9}}]},
-        {"name": "e", "connections": [{"dep": {"stop": "x", "time": 8}, "arr": {"stop": "t", "time": 13}}]},
-        {"name": "f", "connections": [{"dep": {"stop": "y", "time": 10}, "arr": {"stop": "t", "time": 11}}]},
-        {"name": "g", "connections": [{"dep": {"stop": "z", "time": 9}, "arr": {"stop": "t", "time": 12}}]}
+        {"id": "a", "connections": [{"dep": {"stop": "s", "time": 6}, "arr": {"stop": "x", "time": 7}}]},
+        {"id": "b", "connections": [{"dep": {"stop": "s", "time": 5}, "arr": {"stop": "t", "time": 14}}]},
+        {"id": "c", "connections": [{"dep": {"stop": "s", "time": 7}, "arr": {"stop": "z", "time": 8}}]},
+        {"id": "d", "connections": [{"dep": {"stop": "x", "time": 8}, "arr": {"stop": "y", "time": 9}}]},
+        {"id": "e", "connections": [{"dep": {"stop": "x", "time": 8}, "arr": {"stop": "t", "time": 13}}]},
+        {"id": "f", "connections": [{"dep": {"stop": "y", "time": 10}, "arr": {"stop": "t", "time": 11}}]},
+        {"id": "g", "connections": [{"dep": {"stop": "z", "time": 9}, "arr": {"stop": "t", "time": 12}}]}
     ],
     "footpaths": {
         "s": [{"arr": "s", "dur": 1}],
