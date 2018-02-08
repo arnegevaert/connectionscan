@@ -93,13 +93,16 @@ class CSA {
 
             // Update profile function
             let depProfile = profile[connection.dep.stop];
-            let earliestArrival = depProfile[depProfile.length-1].arrTimes;
-            let minVector = this.minVector([connectionMinTimes, earliestArrival]);
-            if (minVector !== earliestArrival) {
+            let earliestProfileEntry = depProfile[depProfile.length-1];
+            let minVector = this.minVector([connectionMinTimes, earliestProfileEntry.arrTimes]);
+            if (minVector !== earliestProfileEntry.arrTimes) {
                 let changeTime = this.getWalkingDistance(connection.dep.stop, connection.dep.stop);
                 let depTime = connection.dep.time - changeTime;
-                profile[connection.dep.stop].push({depTime: depTime, arrTimes: minVector});
-                // TODO if departure time is the same as existing earliest departure, overwrite (redundant)
+                if (earliestProfileEntry.depTime !== depTime) {
+                    depProfile.push({depTime: depTime, arrTimes: minVector});
+                } else {
+                    depProfile[depProfile.length - 1] = {depTime: depTime, arrTimes: minVector};
+                }
             }
             tripTimes[connection.tripId] = connectionMinTimes;
         });
