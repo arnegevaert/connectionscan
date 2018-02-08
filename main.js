@@ -108,10 +108,12 @@ class CSA {
                         if (footpath.arr === connection.dep.stop) {
                             // Incorporate (c_dep_time - f_dur, t_c) into profile of S[f_dep_stop]
                             let depTime = connection.dep.time - footpath.dur;
-                            if (earliestProfileEntry.depTime !== depTime) {
-                                depProfile.push({depTime: depTime, arrTimes: minVector});
+                            let FPDepProfile = profile[stop];
+                            let FPDepEarliestEntry = FPDepProfile[FPDepProfile.length - 1];
+                            if (FPDepEarliestEntry.depTime !== depTime) {
+                                FPDepProfile.push({depTime: depTime, arrTimes: minVector});
                             } else {
-                                depProfile[depProfile.length - 1] = {depTime: depTime, arrTimes: minVector};
+                                FPDepProfile[FPDepProfile.length - 1] = {depTime: depTime, arrTimes: minVector};
                             }
                         }
                     })
