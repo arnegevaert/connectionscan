@@ -71,7 +71,9 @@ class CSA {
         // profile contains profile function, objects sorted by descending departure time for each stop!
         let profile = {}; // {depStop: [{depTime: dt, arrTimes: [arrTime]}]}
         this.stops.forEach(stop => {
-            profile[stop] = [{depTime: Infinity, arrTimes: Array(maxLegs).fill(Infinity)}];
+            profile[stop] = [{depTime: Infinity, arrTimes: Array(maxLegs).fill(Infinity),
+                              enterConnections: Array(maxLegs).fill(null),
+                              exitConnections: Array(maxLegs).fill(null)}];
         });
         let tripTimes = {};
         this.trips.forEach(t => {
@@ -115,10 +117,22 @@ class CSA {
                             let depTime = connection.dep.time - footpath.dur;
                             let FPDepProfile = profile[stop];
                             let FPDepEarliestEntry = FPDepProfile[FPDepProfile.length - 1];
+                            let enterConnections = FPDepEarliestEntry.enterConnections;
+                            let exitConnections = FPDepEarliestEntry.exitConnections;
+                            for (let i = 0; i < enterConnections.length; i++) {
+                                if (minVector[i] < FPDepEarliestEntry.arrTimes[i]) {
+                                    enterConnections[i] = connection;
+                                    exitConnections[i] = tripTimes[connection.tripId][i].connection
+                                }
+                            }
                             if (FPDepEarliestEntry.depTime !== depTime) {
-                                FPDepProfile.push({depTime: depTime, arrTimes: minVector});
+                                FPDepProfile.push({depTime: depTime, arrTimes: minVector,
+                                                    enterConnections: enterConnections,
+                                                    exitConnections: exitConnections});
                             } else {
-                                FPDepProfile[FPDepProfile.length - 1] = {depTime: depTime, arrTimes: minVector};
+                                FPDepProfile[FPDepProfile.length - 1] = {depTime: depTime, arrTimes: minVector,
+                                                                         enterConnections: enterConnections,
+                                                                         exitConnections: exitConnections};
                             }
                         }
                     })
