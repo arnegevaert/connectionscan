@@ -74,14 +74,19 @@ class CSA {
             profile[stop] = [{depTime: Infinity, arrTimes: Array(maxLegs).fill(Infinity)}];
         });
         let tripTimes = {};
-        this.trips.forEach(t => {tripTimes[t.id] = Array(maxLegs).fill(Infinity)});
+        this.trips.forEach(t => {
+            tripTimes[t.id] = Array(maxLegs).fill({connection: null, time:Infinity});
+        });
         this.sortedConnections.forEach(connection => {
             // Calculate time for getting off here and walking to the target
             let x = connection.arr.time + this.getWalkingDistance(connection.arr.stop, target);
             let walkTime = Array(maxLegs).fill(x);
 
             // Calculate time for remaining seated
-            let remainTime = tripTimes[connection.tripId];
+            let remainTime = [];
+            tripTimes[connection.tripId].forEach(pair => {
+                remainTime.push(pair.time);
+            });
 
             // Calculate time for transferring
             let transferTime = this.shiftVector(
@@ -119,7 +124,16 @@ class CSA {
                     })
                 });
             }
-            tripTimes[connection.tripId] = connectionMinTimes;
+            let oldTripTimes = tripTimes[connection.tripId];
+            let newTripTimes = [];
+            for (let i = 0; i < oldTripTimes.length; i++) {
+                if (connectionMinTimes[i] < oldTripTimes[i].time) {
+                    newTripTimes.push({connection: connection, time: connectionMinTimes[i]});
+                } else {
+                    newTripTimes.push(oldTripTimes[i]);
+                }
+            }
+            tripTimes[connection.tripId] = newTripTimes;
         });
         return profile;
     }
