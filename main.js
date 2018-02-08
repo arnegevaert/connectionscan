@@ -65,6 +65,8 @@ class CSA {
         return Array(maxLegs).fill(Infinity);
     }
 
+    // TODO annotate using pseudocode from paper
+    // TODO test with proper footpaths
     calculateProfile(target, maxLegs) {
         // profile contains profile function, objects sorted by descending departure time for each stop!
         let profile = {}; // {depStop: [{depTime: dt, arrTimes: [arrTime]}]}
@@ -75,10 +77,7 @@ class CSA {
         this.trips.forEach(t => {tripTimes[t.id] = Array(maxLegs).fill(Infinity)});
         this.sortedConnections.forEach(connection => {
             // Calculate time for getting off here and walking to the target
-            let x = Infinity;
-            if (connection.arr.stop === target) {
-                x = connection.arr.time + this.getWalkingDistance(target, target);
-            }
+            let x = connection.arr.time + this.getWalkingDistance(connection.arr.stop, target);
             let walkTime = Array(maxLegs).fill(x);
 
             // Calculate time for remaining seated
@@ -95,14 +94,28 @@ class CSA {
             let depProfile = profile[connection.dep.stop];
             let earliestProfileEntry = depProfile[depProfile.length-1];
             let minVector = this.minVector([connectionMinTimes, earliestProfileEntry.arrTimes]);
-            if (minVector !== earliestProfileEntry.arrTimes) {
-                let changeTime = this.getWalkingDistance(connection.dep.stop, connection.dep.stop);
-                let depTime = connection.dep.time - changeTime;
-                if (earliestProfileEntry.depTime !== depTime) {
-                    depProfile.push({depTime: depTime, arrTimes: minVector});
-                } else {
-                    depProfile[depProfile.length - 1] = {depTime: depTime, arrTimes: minVector};
-                }
+
+            // Limited walking: only update if (connection.dep.time, connectionMinTimes)
+            // is non-dominated in profile[connection.dep.stop]
+            let dominated = earliestProfileEntry.depTime === connection.dep.time;
+            for (let i = 0; i < earliestProfileEntry.arrTimes.length; i++) {
+                dominated = dominated && earliestProfileEntry.arrTimes[i] <= connectionMinTimes[i];
+            }
+            if (!dominated) {
+                // For all footpaths f with f_arr_stop = c_dep_stop
+                this.stops.forEach(stop => {
+                    this.footpaths[stop].forEach(footpath => {
+                        if (footpath.arr === connection.dep.stop) {
+                            // Incorporate (c_dep_time - f_dur, t_c) into profile of S[f_dep_stop]
+                            let depTime = connection.dep.time - footpath.dur;
+                            if (earliestProfileEntry.depTime !== depTime) {
+                                depProfile.push({depTime: depTime, arrTimes: minVector});
+                            } else {
+                                depProfile[depProfile.length - 1] = {depTime: depTime, arrTimes: minVector};
+                            }
+                        }
+                    })
+                });
             }
             tripTimes[connection.tripId] = connectionMinTimes;
         });
