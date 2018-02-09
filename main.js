@@ -1,5 +1,7 @@
 const fs = require('fs');
 
+// TODO journey extraction from journey pointers (note: exitConnections is always [null] right now, probable bug)
+// TODO extensive testing
 class CSA {
     /**
      * Data structures:
