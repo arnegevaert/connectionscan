@@ -106,41 +106,56 @@ class CSA {
     /**
      * Calculate profile function with given target and maxLegs
      * Data structures:
-     *      profileEntry:
-     *      profile:
-     *      tripTimes:
-     * @param target
-     * @param maxLegs
-     * @returns {{}}
+     *      profileEntry: {
+     *          "depTime": int, "arrTimes": [int],
+     *          "enterConnections": [connection],
+     *          "exitConnections": [connection]
+     *      }
+     *      profile: {
+     *          depStop: [profileEntry] (Note: Profile entries are sorted by decreasing departure time)
+     *      }
+     *      tripTimes: {
+     *          tripId: [{"connection": connection, "time": int}]
+     *      } (Entry connection and arrival time per amount of legs)
+     * @param target: string
+     * @param maxLegs: int
      */
     calculateProfile(target, maxLegs) {
-        // profile contains profile function, objects sorted by descending departure time for each stop!
-        let profile = {}; // {depStop: [{depTime: dt, arrTimes: [arrTime]}]}
+        // For all stops x do S[x] <- {(Inf, (Inf, ..., Inf), (null, ..., null), (null, ..., null)}
+        let profile = {};
         this.stops.forEach(stop => {
             profile[stop] = [{depTime: Infinity, arrTimes: Array(maxLegs).fill(Infinity),
                               enterConnections: Array(maxLegs).fill(null),
                               exitConnections: Array(maxLegs).fill(null)}];
         });
+
+        // For all trips x do T[x] <- ((null, Inf), ..., (null, Inf))
         let tripTimes = {};
         this.trips.forEach(t => {
             tripTimes[t.id] = Array(maxLegs).fill({connection: null, time:Infinity});
         });
+
+        // For connections c decreasing by c_dep_time do
         this.sortedConnections.forEach(connection => {
-            // Calculate time for getting off here and walking to the target
+            // t1 <- c_arr_time + D[c_arr_stop]
+            // (calculate time for getting off here and walking to the target)
             let x = connection.arr.time + this.getWalkingDistance(connection.arr.stop, target);
             let walkTime = Array(maxLegs).fill(x);
 
-            // Calculate time for remaining seated
+            // t2 <- T[c_trip]
+            // (calculate time for remaining seated)
             let remainTime = [];
             tripTimes[connection.tripId].forEach(pair => {
                 remainTime.push(pair.time);
             });
 
-            // Calculate time for transferring
+            // t3 <- evaluate S[c_arr_stop] at c_arr_time
+            // (calculate time for transferring)
             let transferTime = this.shiftVector(
                 this.evalProfile(profile, connection.arr.time, connection.arr.stop, maxLegs));
 
-            // Calculate min time
+            // Tc <- min{t1,t2,t3}
+            // Note: connectionMinTimes = Tc!
             let connectionMinTimes = this.minVector([walkTime, remainTime, transferTime]);
 
             // Update profile function
