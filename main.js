@@ -215,6 +215,8 @@ class CSA {
                     })
                 });
             }
+            // T[c_trip] <- Tc
+            // Also update journey pointers for T
             let oldTripTimes = tripTimes[connection.tripId];
             let newTripTimes = [];
             for (let i = 0; i < oldTripTimes.length; i++) {
