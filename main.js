@@ -1,13 +1,27 @@
 const fs = require('fs');
 
 class CSA {
+    /**
+     * Data structures:
+     *      connection: {
+     *          "dep": {"stop": string, "time": int},
+     *          "arr": {"stop": string, "time": int},
+     *          "tripId": string
+     *      }
+     *      sortedConnections: [connection] (sorted by decreasing dep.time)
+     *      footpaths: {
+     *          "dep": [{"arr": string, "dur": int}]
+     *      }
+     *      trips: [{"id": string, "connections": [connection]}]
+     * @param filename
+     */
     constructor(filename) {
-        // Initialize variables
+        // Read input file and extract variables
         const dataset = JSON.parse(fs.readFileSync(filename));
         this.stops = dataset.stops;
         this.trips = dataset.trips;
         this.sortedConnections = [];
-        this.footpaths = dataset.footpaths; // {dep: [{'arr': arr, 'dur': dur}]}
+        this.footpaths = dataset.footpaths;
 
         // Sort all connections
         this.trips.forEach(t => {
@@ -19,6 +33,13 @@ class CSA {
         this.sortedConnections.sort((a,b) => b.dep.time - a.dep.time);
     }
 
+    /**
+     * Get walking distance from dep to arr
+     * Returns Infinity if no footpath available
+     * Returns change time if dep === arr
+     * @param dep: string
+     * @param arr: string
+     */
     getWalkingDistance(dep, arr) {
         let footpaths = this.footpaths[dep];
         let result = Infinity;
@@ -30,6 +51,12 @@ class CSA {
         return result;
     }
 
+    /**
+     * Shift a number vector to the right,
+     * inserting Infinity on the left side and discarding
+     * the last number on the right side
+     * @param vector: [int]
+     */
     shiftVector(vector) {
         // Shift vector to the right
         // Insert Infinity on left side
@@ -40,6 +67,12 @@ class CSA {
         return result;
     }
 
+    /**
+     * Calculate component-wise minimum of an array of vectors
+     * eg minVector([[3,8,9],[4,4,4],[5,5,1]]) = [3,4,1]
+     * @param vectors: [[int]]
+     * @returns {Array}
+     */
     minVector(vectors) {
         // Calculate component-wise minimum of vectors (array)
         let result = [];
@@ -51,9 +84,14 @@ class CSA {
         return result;
     }
 
-
-    // Returns profile function (for each amount of legs)
-    // starting from given departure stop and departure time
+    /**
+     * Evaluate the profile function when starting from depStop at depTime,
+     * with up to maxLegs legs
+     * @param profile: profile (see calculateProfile)
+     * @param depTime: int
+     * @param depStop: string
+     * @param maxLegs: int
+     */
     evalProfile(profile, depTime, depStop, maxLegs) {
         let i = profile[depStop].length - 1;
         while (i >= 0) {
@@ -65,8 +103,16 @@ class CSA {
         return Array(maxLegs).fill(Infinity);
     }
 
-    // TODO annotate using pseudocode from paper
-    // TODO test with proper footpaths
+    /**
+     * Calculate profile function with given target and maxLegs
+     * Data structures:
+     *      profileEntry:
+     *      profile:
+     *      tripTimes:
+     * @param target
+     * @param maxLegs
+     * @returns {{}}
+     */
     calculateProfile(target, maxLegs) {
         // profile contains profile function, objects sorted by descending departure time for each stop!
         let profile = {}; // {depStop: [{depTime: dt, arrTimes: [arrTime]}]}
