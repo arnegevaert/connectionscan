@@ -158,34 +158,48 @@ class CSA {
             // Note: connectionMinTimes = Tc!
             let connectionMinTimes = this.minVector([walkTime, remainTime, transferTime]);
 
-            // Update profile function
+            // Calculate if (c_dep_time, Tc) is dominated in S[c_dep_stop]
+            // Note: paper says S[c_arr_stop], this is probably a mistake
+            // (c_dep_time, Tc) can only be dominated by the last entry of the profile,
+            // as the profile is sorted by descending departure time
             let depProfile = profile[connection.dep.stop];
             let earliestProfileEntry = depProfile[depProfile.length-1];
-            let minVector = this.minVector([connectionMinTimes, earliestProfileEntry.arrTimes]);
-
-            // Limited walking: only update if (connection.dep.time, connectionMinTimes)
-            // is non-dominated in profile[connection.dep.stop]
             let dominated = earliestProfileEntry.depTime === connection.dep.time;
             for (let i = 0; i < earliestProfileEntry.arrTimes.length; i++) {
                 dominated = dominated && earliestProfileEntry.arrTimes[i] <= connectionMinTimes[i];
             }
+
+            // if (c_dep_time, Tc) is non-dominated in S[c_dep_stop] then
             if (!dominated) {
+                // minVector is component-wise minimum of Tc and the current arrival times of
+                // the profile entry with earliest departure time. Used to "incorporate" Tc into the profile
+                let minVector = this.minVector([connectionMinTimes, earliestProfileEntry.arrTimes]);
                 // For all footpaths f with f_arr_stop = c_dep_stop
                 this.stops.forEach(stop => {
                     this.footpaths[stop].forEach(footpath => {
                         if (footpath.arr === connection.dep.stop) {
                             // Incorporate (c_dep_time - f_dur, t_c) into profile of S[f_dep_stop]
-                            let depTime = connection.dep.time - footpath.dur;
-                            let FPDepProfile = profile[stop];
-                            let FPDepEarliestEntry = FPDepProfile[FPDepProfile.length - 1];
-                            let enterConnections = FPDepEarliestEntry.enterConnections;
-                            let exitConnections = FPDepEarliestEntry.exitConnections;
-                            for (let i = 0; i < enterConnections.length; i++) {
+                            let depTime = connection.dep.time - footpath.dur; // Calculate c_dep_time - f_dur
+                            let FPDepProfile = profile[stop]; // S[f_dep_sop]
+                            let FPDepEarliestEntry = FPDepProfile[FPDepProfile.length - 1]; // earliest dep time
+                            // Enter and exit connections are journey pointers
+                            let enterConnections = [];
+                            let exitConnections = [];
+
+                            // For each amount of legs
+                            for (let i = 0; i < maxLegs; i++) {
+                                // If the new arrival time is better, update journey pointers
+                                // Else, keep old journey pointers
                                 if (minVector[i] < FPDepEarliestEntry.arrTimes[i]) {
                                     enterConnections[i] = connection;
                                     exitConnections[i] = tripTimes[connection.tripId][i].connection
+                                } else {
+                                    enterConnections[i] = FPDepEarliestEntry.enterConnections[i];
+                                    exitConnections[i] = FPDepEarliestEntry.exitConnections[i];
                                 }
                             }
+                            // If the new departure time is equal, update the profile entry
+                            // Else, insert a new entry
                             if (FPDepEarliestEntry.depTime !== depTime) {
                                 FPDepProfile.push({depTime: depTime, arrTimes: minVector,
                                                     enterConnections: enterConnections,
@@ -215,4 +229,5 @@ class CSA {
 }
 
 let csa = new CSA('test.json', 10);
-console.log(JSON.stringify(csa.calculateProfile("t", 5), null, 4));
+let profile = csa.calculateProfile("t", 5);
+console.log("Done");
