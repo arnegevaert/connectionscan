@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-// TODO journey extraction from journey pointers (note: exitConnections is always [null] right now, probable bug)
+// TODO journey extraction from journey pointers
 // TODO extensive testing
 class CSA {
     /**
@@ -194,7 +194,12 @@ class CSA {
                                 // Else, keep old journey pointers
                                 if (minVector[i] < FPDepEarliestEntry.arrTimes[i]) {
                                     enterConnections[i] = connection;
-                                    exitConnections[i] = tripTimes[connection.tripId][i].connection
+                                    exitConnections[i] = tripTimes[connection.tripId][i].connection;
+                                    if (exitConnections[i] === null) {
+                                        // This means the exit connection is the enter connection,
+                                        // and tripTimes[connection.tripId] hasn't been initialized properly yet.
+                                        exitConnections[i] = connection;
+                                    }
                                 } else {
                                     enterConnections[i] = FPDepEarliestEntry.enterConnections[i];
                                     exitConnections[i] = FPDepEarliestEntry.exitConnections[i];
@@ -229,6 +234,10 @@ class CSA {
             tripTimes[connection.tripId] = newTripTimes;
         });
         return profile;
+    }
+
+    extractJourney(profile, ) {
+        // TODO
     }
 }
 
