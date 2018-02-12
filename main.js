@@ -251,26 +251,53 @@ class CSA {
             if (entry.depTime >= depTime) {
                 for (let i = 0; i < entry.arrTimes.length; i++) {
                     // Extract journey for journey pointer i
-                    let journey = {
-                        depTime: entry.depTime,
-                        arrTime: entry.arrTimes[i],
-                        numLegs: i,
-                        legs: []};
-                    let remainingTransfers = i;
-                    // Add initial leg to journey
-                    journey.legs.push({
-                        trip: entry.enterConnections[i].tripId,
-                        enter: {
-                            stop: entry.enterConnections[i].dep.stop,
-                            time: entry.enterConnections[i].dep.time
-                        },
-                        exit: {
-                            stop: entry.exitConnections[i].arr.stop,
-                            time: entry.exitConnections[i].arr.time
+                    if (entry.arrTimes[i] !== Infinity) {
+                        let journey = {
+                            depTime: entry.depTime,
+                            arrTime: entry.arrTimes[i],
+                            numLegs: i,
+                            legs: []};
+                        let remainingTransfers = i;
+                        let currentEntry = entry;
+                        // Add initial leg to journey
+                        journey.legs.push({
+                            trip: entry.enterConnections[i].tripId,
+                            enter: {
+                                stop: entry.enterConnections[i].dep.stop,
+                                time: entry.enterConnections[i].dep.time
+                            },
+                            exit: {
+                                stop: entry.exitConnections[i].arr.stop,
+                                time: entry.exitConnections[i].arr.time
+                            }
+                        });
+                        while (remainingTransfers > 0) {
+                            //currentEntry = profile[currentEntry.exitConnections[remainingTransfers].arr.stop];
+                            let lastArrTime = currentEntry.exitConnections[i].arr.time;
+                            let currentProfile = profile[currentEntry.exitConnections[remainingTransfers].arr.stop];
+                            let currentIndex = currentProfile.length - 1;
+                            currentEntry = currentProfile[currentIndex];
+                            while (currentEntry.depTime >= lastArrTime) {
+                                currentIndex--;
+                                currentEntry = currentProfile[currentIndex];
+                            }
+                            currentEntry = currentProfile[currentIndex + 1];
+
+                            journey.legs.push({
+                                trip: currentEntry.enterConnections[remainingTransfers].tripId,
+                                enter: {
+                                    stop: currentEntry.enterConnections[remainingTransfers].dep.stop,
+                                    time: currentEntry.enterConnections[remainingTransfers].dep.time
+                                },
+                                exit: {
+                                    stop: currentEntry.exitConnections[remainingTransfers].arr.stop,
+                                    time: currentEntry.exitConnections[remainingTransfers].arr.time
+                                }
+                            });
+                            remainingTransfers--;
                         }
-                    });
-                    // TODO iteratively add next connection, use decrementing
-                    // TODO     remainingTransfers to determine connections
+                        journeys.push(journey);
+                    }
                 }
             }
         });
@@ -280,5 +307,5 @@ class CSA {
 
 let csa = new CSA('test.json', 10);
 let profile = csa.calculateProfile("t", 5);
-let journeys = csa.extractJourneys(profile, "s", "t");
+let journeys = csa.extractJourneys(profile, "s", "t", 0);
 console.log("Done");
