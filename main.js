@@ -232,7 +232,18 @@ class CSA {
             }
             tripTimes[connection.tripId] = newTripTimes;
         });
-        return profile;
+
+        let result = {};
+        // Filter out Infinity entries
+        this.stops.forEach(stop => {
+            result[stop] = [];
+            profile[stop].forEach(entry => {
+                if (entry.depTime !== Infinity) {
+                    result[stop].push(entry);
+                }
+            });
+        });
+        return result;
     }
 
     /**
@@ -257,45 +268,9 @@ class CSA {
                             arrTime: entry.arrTimes[i],
                             numLegs: i,
                             legs: []};
-                        let remainingTransfers = i;
-                        let currentEntry = entry;
-                        // Add initial leg to journey
-                        journey.legs.push({
-                            trip: entry.enterConnections[i].tripId,
-                            enter: {
-                                stop: entry.enterConnections[i].dep.stop,
-                                time: entry.enterConnections[i].dep.time
-                            },
-                            exit: {
-                                stop: entry.exitConnections[i].arr.stop,
-                                time: entry.exitConnections[i].arr.time
-                            }
-                        });
-                        while (remainingTransfers > 0) {
-                            //currentEntry = profile[currentEntry.exitConnections[remainingTransfers].arr.stop];
-                            let lastArrTime = currentEntry.exitConnections[i].arr.time;
-                            let currentProfile = profile[currentEntry.exitConnections[remainingTransfers].arr.stop];
-                            let currentIndex = currentProfile.length - 1;
-                            currentEntry = currentProfile[currentIndex];
-                            while (currentEntry.depTime >= lastArrTime) {
-                                currentIndex--;
-                                currentEntry = currentProfile[currentIndex];
-                            }
-                            currentEntry = currentProfile[currentIndex + 1];
 
-                            journey.legs.push({
-                                trip: currentEntry.enterConnections[remainingTransfers].tripId,
-                                enter: {
-                                    stop: currentEntry.enterConnections[remainingTransfers].dep.stop,
-                                    time: currentEntry.enterConnections[remainingTransfers].dep.time
-                                },
-                                exit: {
-                                    stop: currentEntry.exitConnections[remainingTransfers].arr.stop,
-                                    time: currentEntry.exitConnections[remainingTransfers].arr.time
-                                }
-                            });
-                            remainingTransfers--;
-                        }
+                        // TODO
+
                         journeys.push(journey);
                     }
                 }
@@ -309,3 +284,4 @@ let csa = new CSA('test.json', 10);
 let profile = csa.calculateProfile("t", 5);
 let journeys = csa.extractJourneys(profile, "s", "t", 0);
 console.log("Done");
+console.log(JSON.stringify(profile, null, 1));
