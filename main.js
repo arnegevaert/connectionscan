@@ -264,6 +264,7 @@ class CSA {
      * @param target: string
      * @param depTime: int
      */
+    // TODO remove redundant journeys (more legs than necessary)
     extractJourneys(profile, source, target, depTime) {
         let journeys = [];
         profile[source].forEach(entry => {
