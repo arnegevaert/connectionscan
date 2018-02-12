@@ -251,7 +251,7 @@ class CSA {
      * Data structures:
      *      journey: [leg, footpath, leg, ...]
      *      leg: {
-     *          trip: string,
+     *          tripId: string,
      *          enter: {stop: string, time: int},
      *          exit: {stop: string, time: int}
      *      }
@@ -268,15 +268,42 @@ class CSA {
         let journeys = [];
         profile[source].forEach(entry => {
             if (entry.depTime >= depTime) {
-                for (let i = 0; i < entry.arrTimes.length; i++) {
-                    // Extract journey for amount of legs i
+                for (let numLegs = 0; numLegs < entry.arrTimes.length; numLegs++) {
+                    // Extract journey for amount of legs numLegs
                     let journey = {
                         depTime: entry.depTime,
-                        arrTime: entry.arrTimes[i],
-                        numLegs: i,
+                        arrTime: entry.arrTimes[numLegs],
+                        numLegs: numLegs,
                         legs: []};
 
-                    // TODO
+                    let currentEntry = entry;
+                    let remainingLegs = numLegs;
+                    while (remainingLegs > 0) {
+                        // Construct and push leg
+                        let enterConnection = currentEntry.enterConnections[remainingLegs];
+                        let exitConnection = currentEntry.enterConnections[remainingLegs];
+                        let leg = {
+                            tripId: enterConnection.tripId,
+                            enter: enterConnection.dep,
+                            exit: exitConnection.arr
+                        };
+                        journey.legs.push(leg);
+
+                        // Find profile entry for next leg
+                        let nextProfile = profile[leg.exit.stop];
+                        let i = 0; let found = false;
+                        while (i < nextProfile.length && !found) {
+                            let departure = nextProfile[i].enterConnections[remainingLegs-1].dep;
+                            let walkingDistance = this.getWalkingDistance(leg.exit.stop, departure.stop);
+                            if (departure.time >= leg.exit.time + walkingDistance) {
+                                found = true;
+                                currentEntry = nextProfile[i];
+                            }
+                            i++;
+                        }
+
+                        remainingLegs--;
+                    }
 
                     journeys.push(journey);
                 }
@@ -290,4 +317,4 @@ let csa = new CSA('test.json', 10);
 let profile = csa.calculateProfile("t", 5);
 let journeys = csa.extractJourneys(profile, "s", "t", 0);
 console.log("Done");
-console.log(JSON.stringify(profile, null, 1));
+console.log(JSON.stringify(journeys, null, 1));
