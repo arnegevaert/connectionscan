@@ -4,7 +4,6 @@
   "description": "Implementation of Connection Scan algorithm",
   "main": "main.js",
   "dependencies": {
-    "fs": "^0.0.1-security"
   },
   "devDependencies": {},
   "scripts": {
