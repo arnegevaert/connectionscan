@@ -249,8 +249,16 @@ class CSA {
     /**
      * Extract possible journeys from profile, with departure time equal to or greater than depTime.
      * Data structures:
-     *      journey:
-     *      leg:
+     *      journey: [leg, footpath, leg, ...]
+     *      leg: {
+     *          trip: string,
+     *          enter: {stop: string, time: int},
+     *          exit: {stop: string, time: int}
+     *      }
+     *      footpath: {
+     *          dep: {stop: string, time: int},
+     *          arr: {stop: string, time: int}
+     *      }
      * @param profile: profile (see above calculateProfile)
      * @param source: string
      * @param target: string
@@ -261,18 +269,16 @@ class CSA {
         profile[source].forEach(entry => {
             if (entry.depTime >= depTime) {
                 for (let i = 0; i < entry.arrTimes.length; i++) {
-                    // Extract journey for journey pointer i
-                    if (entry.arrTimes[i] !== Infinity) {
-                        let journey = {
-                            depTime: entry.depTime,
-                            arrTime: entry.arrTimes[i],
-                            numLegs: i,
-                            legs: []};
+                    // Extract journey for amount of legs i
+                    let journey = {
+                        depTime: entry.depTime,
+                        arrTime: entry.arrTimes[i],
+                        numLegs: i,
+                        legs: []};
 
-                        // TODO
+                    // TODO
 
-                        journeys.push(journey);
-                    }
+                    journeys.push(journey);
                 }
             }
         });
