@@ -2,6 +2,7 @@ const fs = require('fs');
 
 // TODO extensive testing
 // TODO footpaths must be reflexive!
+// TODO if footpath arrives *exactly* on time, the connection is not taken
 class CSA {
     /**
      * Data structures:
@@ -316,7 +317,7 @@ class CSA {
     }
 }
 
-let csa = new CSA('test2.json', 10);
-let profile = csa.calculateProfile("t", 5);
-let journeys = csa.extractJourneys(profile, "s", "t", 0);
+let csa = new CSA('test2.json');
+let profile = csa.calculateProfile("a5", 5);
+let journeys = csa.extractJourneys(profile, "a1", "a5", 0);
 console.log("Done");
