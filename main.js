@@ -172,6 +172,19 @@ class CSA {
                 dominated = dominated && earliestProfileEntry.arrTimes[i] <= connectionMinTimes[i];
             }
 
+            // T[c_trip] <- Tc
+            // Also update journey pointers for T
+            let oldTripTimes = tripTimes[connection.tripId];
+            let newTripTimes = [];
+            for (let i = 0; i < oldTripTimes.length; i++) {
+                if (connectionMinTimes[i] < oldTripTimes[i].time) {
+                    newTripTimes.push({connection: connection, time: connectionMinTimes[i]});
+                } else {
+                    newTripTimes.push(oldTripTimes[i]);
+                }
+            }
+            tripTimes[connection.tripId] = newTripTimes;
+
             // if (c_dep_time, Tc) is non-dominated in S[c_dep_stop] then
             if (!dominated) {
                 // minVector is component-wise minimum of Tc and the current arrival times of
@@ -221,18 +234,7 @@ class CSA {
                     })
                 });
             }
-            // T[c_trip] <- Tc
-            // Also update journey pointers for T
-            let oldTripTimes = tripTimes[connection.tripId];
-            let newTripTimes = [];
-            for (let i = 0; i < oldTripTimes.length; i++) {
-                if (connectionMinTimes[i] < oldTripTimes[i].time) {
-                    newTripTimes.push({connection: connection, time: connectionMinTimes[i]});
-                } else {
-                    newTripTimes.push(oldTripTimes[i]);
-                }
-            }
-            tripTimes[connection.tripId] = newTripTimes;
+
         });
 
         let result = {};
