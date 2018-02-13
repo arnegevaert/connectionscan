@@ -1,6 +1,7 @@
 const fs = require('fs');
 
 // TODO extensive testing
+// TODO footpaths must be reflexive!
 class CSA {
     /**
      * Data structures:
@@ -264,7 +265,6 @@ class CSA {
      * @param target: string
      * @param depTime: int
      */
-    // TODO remove redundant journeys (more legs than necessary)
     extractJourneys(profile, source, target, depTime) {
         let journeys = [];
         profile[source].forEach(entry => {
@@ -305,7 +305,6 @@ class CSA {
                                 }
                                 i++;
                             }
-
                             remainingLegs--;
                         }
                         journeys.push(journey);
@@ -317,8 +316,7 @@ class CSA {
     }
 }
 
-let csa = new CSA('test.json', 10);
+let csa = new CSA('test2.json', 10);
 let profile = csa.calculateProfile("t", 5);
 let journeys = csa.extractJourneys(profile, "s", "t", 0);
 console.log("Done");
-console.log(JSON.stringify(journeys, null, 1));
