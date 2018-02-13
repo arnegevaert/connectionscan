@@ -269,14 +269,16 @@ class CSA {
         let journeys = [];
         profile[source].forEach(entry => {
             if (entry.depTime >= depTime) {
+                let bestArrTime = Infinity;
                 for (let numLegs = 0; numLegs < entry.arrTimes.length; numLegs++) {
-                    if (entry.arrTimes[numLegs] !== Infinity) {
+                    if (entry.arrTimes[numLegs] < bestArrTime) {
                         // Extract journey for amount of legs numLegs
                         let journey = {
                             depTime: entry.depTime,
                             arrTime: entry.arrTimes[numLegs],
                             numLegs: numLegs,
                             legs: []};
+                        bestArrTime = entry.arrTimes[numLegs];
 
                         let currentEntry = entry;
                         let remainingLegs = numLegs;
