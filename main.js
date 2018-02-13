@@ -270,43 +270,44 @@ class CSA {
         profile[source].forEach(entry => {
             if (entry.depTime >= depTime) {
                 for (let numLegs = 0; numLegs < entry.arrTimes.length; numLegs++) {
-                    // Extract journey for amount of legs numLegs
-                    let journey = {
-                        depTime: entry.depTime,
-                        arrTime: entry.arrTimes[numLegs],
-                        numLegs: numLegs,
-                        legs: []};
+                    if (entry.arrTimes[numLegs] !== Infinity) {
+                        // Extract journey for amount of legs numLegs
+                        let journey = {
+                            depTime: entry.depTime,
+                            arrTime: entry.arrTimes[numLegs],
+                            numLegs: numLegs,
+                            legs: []};
 
-                    let currentEntry = entry;
-                    let remainingLegs = numLegs;
-                    while (remainingLegs > 0) {
-                        // Construct and push leg
-                        let enterConnection = currentEntry.enterConnections[remainingLegs];
-                        let exitConnection = currentEntry.enterConnections[remainingLegs];
-                        let leg = {
-                            tripId: enterConnection.tripId,
-                            enter: enterConnection.dep,
-                            exit: exitConnection.arr
-                        };
-                        journey.legs.push(leg);
+                        let currentEntry = entry;
+                        let remainingLegs = numLegs;
+                        while (remainingLegs > 0) {
+                            // Construct and push leg
+                            let enterConnection = currentEntry.enterConnections[remainingLegs];
+                            let exitConnection = currentEntry.enterConnections[remainingLegs];
+                            let leg = {
+                                tripId: enterConnection.tripId,
+                                enter: enterConnection.dep,
+                                exit: exitConnection.arr
+                            };
+                            journey.legs.push(leg);
 
-                        // Find profile entry for next leg
-                        let nextProfile = profile[leg.exit.stop];
-                        let i = 0; let found = false;
-                        while (i < nextProfile.length && !found) {
-                            let departure = nextProfile[i].enterConnections[remainingLegs-1].dep;
-                            let walkingDistance = this.getWalkingDistance(leg.exit.stop, departure.stop);
-                            if (departure.time >= leg.exit.time + walkingDistance) {
-                                found = true;
-                                currentEntry = nextProfile[i];
+                            // Find profile entry for next leg
+                            let nextProfile = profile[leg.exit.stop];
+                            let i = 0; let found = false;
+                            while (i < nextProfile.length && !found) {
+                                let departure = nextProfile[i].enterConnections[remainingLegs-1].dep;
+                                let walkingDistance = this.getWalkingDistance(leg.exit.stop, departure.stop);
+                                if (departure.time >= leg.exit.time + walkingDistance) {
+                                    found = true;
+                                    currentEntry = nextProfile[i];
+                                }
+                                i++;
                             }
-                            i++;
+
+                            remainingLegs--;
                         }
-
-                        remainingLegs--;
+                        journeys.push(journey);
                     }
-
-                    journeys.push(journey);
                 }
             }
         });
