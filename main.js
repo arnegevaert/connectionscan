@@ -1,7 +1,6 @@
 const fs = require('fs');
 
 // TODO extensive testing
-// TODO footpaths must be reflexive!
 // TODO if footpath arrives *exactly* on time, the connection is not taken
 class CSA {
     /**
@@ -273,22 +272,22 @@ class CSA {
         profile[source].forEach(entry => {
             if (entry.depTime >= depTime) {
                 let bestArrTime = Infinity;
-                for (let numLegs = 0; numLegs < entry.arrTimes.length; numLegs++) {
-                    if (entry.arrTimes[numLegs] < bestArrTime) {
-                        // Extract journey for amount of legs numLegs
+                for (let transfers = 0; transfers < entry.arrTimes.length; transfers++) {
+                    if (entry.arrTimes[transfers] < bestArrTime) {
+                        // Extract journey for amount of transfers
                         let journey = {
                             depTime: entry.depTime,
-                            arrTime: entry.arrTimes[numLegs],
-                            numLegs: numLegs,
+                            arrTime: entry.arrTimes[transfers],
+                            transfers: transfers,
                             legs: []};
-                        bestArrTime = entry.arrTimes[numLegs];
+                        bestArrTime = entry.arrTimes[transfers];
 
                         let currentEntry = entry;
-                        let remainingLegs = numLegs;
-                        while (remainingLegs > 0) {
+                        let remainingTransfers = transfers;
+                        while (remainingTransfers >= 0) {
                             // Construct and push leg
-                            let enterConnection = currentEntry.enterConnections[remainingLegs];
-                            let exitConnection = currentEntry.enterConnections[remainingLegs];
+                            let enterConnection = currentEntry.enterConnections[remainingTransfers];
+                            let exitConnection = currentEntry.exitConnections[remainingTransfers];
                             let leg = {
                                 tripId: enterConnection.tripId,
                                 enter: enterConnection.dep,
@@ -296,19 +295,21 @@ class CSA {
                             };
                             journey.legs.push(leg);
 
-                            // Find profile entry for next leg
-                            let nextProfile = profile[leg.exit.stop];
-                            let i = 0; let found = false;
-                            while (i < nextProfile.length && !found) {
-                                let departure = nextProfile[i].enterConnections[remainingLegs-1].dep;
-                                let walkingDistance = this.getWalkingDistance(leg.exit.stop, departure.stop);
-                                if (departure.time >= leg.exit.time + walkingDistance) {
-                                    found = true;
-                                    currentEntry = nextProfile[i];
+                            if (remainingTransfers > 0) {
+                                // Find profile entry for next leg
+                                let nextProfile = profile[leg.exit.stop];
+                                let i = nextProfile.length-1; let found = false;
+                                while (i >= 0 && !found) {
+                                    let departure = nextProfile[i].enterConnections[remainingTransfers-1].dep;
+                                    let walkingDistance = this.getWalkingDistance(leg.exit.stop, departure.stop);
+                                    if (departure.time >= leg.exit.time + walkingDistance) {
+                                        found = true;
+                                        currentEntry = nextProfile[i];
+                                    }
+                                    i--;
                                 }
-                                i++;
                             }
-                            remainingLegs--;
+                            remainingTransfers--;
                         }
                         journeys.push(journey);
                     }
