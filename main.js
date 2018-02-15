@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 // TODO extensive testing
+// TODO     invalid data? Warning
 // TODO if footpath arrives *exactly* on time, the connection is not taken
+// TODO don't group connections per trip (see https://graph.irail.be/sncb/connections?departureTime=2018-02-09T08:50:00.000Z)
 class CSA {
     /**
      * Data structures:
@@ -42,6 +44,8 @@ class CSA {
      * @param dep: string
      * @param arr: string
      */
+    // TODO make this async/await
+    // TODO and bring to new class
     getWalkingDistance(dep, arr) {
         let footpaths = this.footpaths[dep];
         let result = Infinity;
@@ -124,6 +128,10 @@ class CSA {
      */
     calculateProfile(target, maxLegs) {
         // For all stops x do S[x] <- {(Inf, (Inf, ..., Inf), (null, ..., null), (null, ..., null)}
+        // TODO stops must be added on the fly (view as "stream", "successor" instead of big array) (https://github.com/RubenVerborgh/AsyncIterator)
+        // TODO can footpaths be held in profile data structure? Eg if calculating walk distance is very expensive
+        // TODO only keep trip IDs in profile structure, trips themselves in separate structure (no duplicate storage)
+        // TODO see pickupType/dropOffType (check if connection stops can be added or used)
         let profile = {};
         this.stops.forEach(stop => {
             profile[stop] = [{depTime: Infinity, arrTimes: Array(maxLegs).fill(Infinity),
@@ -173,6 +181,7 @@ class CSA {
 
             // T[c_trip] <- Tc
             // Also update journey pointers for T
+            // TODO refactor to make this clear
             let oldTripTimes = tripTimes[connection.tripId];
             let newTripTimes = [];
             for (let i = 0; i < oldTripTimes.length; i++) {
