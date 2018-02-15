@@ -3,7 +3,7 @@ const fs = require('fs');
 // TODO extensive testing
 // TODO     invalid data? Warning
 // TODO if footpath arrives *exactly* on time, the connection is not taken
-// TODO don't group connections per trip (see https://graph.irail.be/sncb/connections?departureTime=2018-02-09T08:50:00.000Z)
+// TODO data structure: https://graph.irail.be/sncb/connections?departureTime=2018-02-09T08:50:00.000Z
 class CSA {
     /**
      * Data structures:
@@ -14,27 +14,25 @@ class CSA {
      *      }
      *      sortedConnections: [connection] (sorted by decreasing dep.time)
      *      footpaths: {
-     *          "dep": [{"arr": string, "dur": int}]
+     *          [{"stop1": string, "stop2": string, "dur": int}]
      *      }
-     *      trips: [{"id": string, "connections": [connection]}]
-     * @param filename
+     * @param filename: string
      */
     constructor(filename) {
         // Read input file and extract variables
         const dataset = JSON.parse(fs.readFileSync(filename));
         this.stops = dataset.stops;
-        this.trips = dataset.trips;
-        this.sortedConnections = [];
         this.footpaths = dataset.footpaths;
-
-        // Sort all connections
-        this.trips.forEach(t => {
-            t.connections.forEach(c => {
-                c.tripId = t.id;
-                this.sortedConnections.push(c);
-            })
-        });
+        this.sortedConnections = dataset.connections;
         this.sortedConnections.sort((a,b) => b.dep.time - a.dep.time);
+
+        // TODO this is stupid and temporary: trips must be added when they are encountered (open world)
+        this.trips = [];
+        this.sortedConnections.forEach(c => {
+            if (this.trips.indexOf(c.tripId) === -1) {
+                this.trips.push(c.tripId);
+            }
+        })
     }
 
     /**
@@ -47,10 +45,9 @@ class CSA {
     // TODO make this async/await
     // TODO and bring to new class
     getWalkingDistance(dep, arr) {
-        let footpaths = this.footpaths[dep];
         let result = Infinity;
-        footpaths.forEach(fp => {
-            if (fp.arr === arr) {
+        this.footpaths.forEach(fp => {
+            if ((fp.stop1 === dep && fp.stop2 === arr) || (fp.stop1 === arr && fp.stop2 === dep)) {
                 result = fp.dur;
             }
         });
@@ -142,7 +139,7 @@ class CSA {
         // For all trips x do T[x] <- ((null, Inf), ..., (null, Inf))
         let tripTimes = {};
         this.trips.forEach(t => {
-            tripTimes[t.id] = Array(maxLegs).fill({connection: null, time:Infinity});
+            tripTimes[t] = Array(maxLegs).fill({connection: null, time:Infinity});
         });
 
         // For connections c decreasing by c_dep_time do
@@ -199,47 +196,50 @@ class CSA {
                 // the profile entry with earliest departure time. Used to "incorporate" Tc into the profile
                 let minVector = this.minVector([connectionMinTimes, earliestProfileEntry.arrTimes]);
                 // For all footpaths f with f_arr_stop = c_dep_stop
-                this.stops.forEach(stop => {
-                    this.footpaths[stop].forEach(footpath => {
-                        if (footpath.arr === connection.dep.stop) {
-                            // Incorporate (c_dep_time - f_dur, t_c) into profile of S[f_dep_stop]
-                            let depTime = connection.dep.time - footpath.dur; // Calculate c_dep_time - f_dur
-                            let FPDepProfile = profile[stop]; // S[f_dep_sop]
-                            let FPDepEarliestEntry = FPDepProfile[FPDepProfile.length - 1]; // earliest dep time
-                            // Enter and exit connections are journey pointers
-                            let enterConnections = [];
-                            let exitConnections = [];
+                this.footpaths.forEach(footpath => {
+                    if (footpath.stop1 === connection.dep.stop || footpath.stop2 === connection.dep.stop) {
+                        // stop is f_dep_stop, the stop of the footpath that is _not_ connection.dep.stop
+                        let stop = footpath.stop1;
+                        if (stop === connection.dep.stop) {
+                            stop = footpath.stop2;
+                        }
+                        // Incorporate (c_dep_time - f_dur, t_c) into profile of S[f_dep_stop]
+                        let depTime = connection.dep.time - footpath.dur; // Calculate c_dep_time - f_dur
+                        let FPDepProfile = profile[stop]; // S[f_dep_sop]
+                        let FPDepEarliestEntry = FPDepProfile[FPDepProfile.length - 1]; // earliest dep time
+                        // Enter and exit connections are journey pointers
+                        let enterConnections = [];
+                        let exitConnections = [];
 
-                            // For each amount of legs
-                            for (let i = 0; i < maxLegs; i++) {
-                                // If the new arrival time is better, update journey pointers
-                                // Else, keep old journey pointers
-                                if (minVector[i] < FPDepEarliestEntry.arrTimes[i]) {
-                                    enterConnections[i] = connection;
-                                    exitConnections[i] = tripTimes[connection.tripId][i].connection;
-                                    if (exitConnections[i] === null) {
-                                        // This means the exit connection is the enter connection,
-                                        // and tripTimes[connection.tripId] hasn't been initialized properly yet.
-                                        exitConnections[i] = connection;
-                                    }
-                                } else {
-                                    enterConnections[i] = FPDepEarliestEntry.enterConnections[i];
-                                    exitConnections[i] = FPDepEarliestEntry.exitConnections[i];
+                        // For each amount of legs
+                        for (let i = 0; i < maxLegs; i++) {
+                            // If the new arrival time is better, update journey pointers
+                            // Else, keep old journey pointers
+                            if (minVector[i] < FPDepEarliestEntry.arrTimes[i]) {
+                                enterConnections[i] = connection;
+                                exitConnections[i] = tripTimes[connection.tripId][i].connection;
+                                if (exitConnections[i] === null) {
+                                    // This means the exit connection is the enter connection,
+                                    // and tripTimes[connection.tripId] hasn't been initialized properly yet.
+                                    exitConnections[i] = connection;
                                 }
-                            }
-                            // If the new departure time is equal, update the profile entry
-                            // Else, insert a new entry
-                            if (FPDepEarliestEntry.depTime !== depTime) {
-                                FPDepProfile.push({depTime: depTime, arrTimes: minVector,
-                                                    enterConnections: enterConnections,
-                                                    exitConnections: exitConnections});
                             } else {
-                                FPDepProfile[FPDepProfile.length - 1] = {depTime: depTime, arrTimes: minVector,
-                                                                         enterConnections: enterConnections,
-                                                                         exitConnections: exitConnections};
+                                enterConnections[i] = FPDepEarliestEntry.enterConnections[i];
+                                exitConnections[i] = FPDepEarliestEntry.exitConnections[i];
                             }
                         }
-                    })
+                        // If the new departure time is equal, update the profile entry
+                        // Else, insert a new entry
+                        if (FPDepEarliestEntry.depTime !== depTime) {
+                            FPDepProfile.push({depTime: depTime, arrTimes: minVector,
+                                enterConnections: enterConnections,
+                                exitConnections: exitConnections});
+                        } else {
+                            FPDepProfile[FPDepProfile.length - 1] = {depTime: depTime, arrTimes: minVector,
+                                enterConnections: enterConnections,
+                                exitConnections: exitConnections};
+                        }
+                    }
                 });
             }
 
@@ -347,7 +347,7 @@ class CSA {
     }
 }
 
-let csa = new CSA('test2.json');
+let csa = new CSA('test3.json');
 let profile = csa.calculateProfile("a5", 5);
 let journeys = csa.extractJourneys(profile, "a1", "a5", 0);
 console.log("Done");
