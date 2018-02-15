@@ -254,9 +254,9 @@ class CSA {
      * Data structures:
      *      journey: [leg, footpath, leg, ...]
      *      leg: {
-     *          tripId: string,
-     *          enter: {stop: string, time: int},
-     *          exit: {stop: string, time: int}
+     *          dep: {stop: string, time: int},
+     *          arr: {stop: string, time: int},
+     *          tripId: string
      *      }
      *      footpath: {
      *          dep: {stop: string, time: int},
@@ -290,25 +290,25 @@ class CSA {
                             let enterConnection = currentEntry.enterConnections[remainingTransfers];
                             let exitConnection = currentEntry.exitConnections[remainingTransfers];
                             let leg = {
-                                tripId: enterConnection.tripId,
-                                enter: enterConnection.dep,
-                                exit: exitConnection.arr
+                                dep: enterConnection.dep,
+                                arr: exitConnection.arr,
+                                tripId: enterConnection.tripId
                             };
                             journey.legs.push(leg);
 
                             remainingTransfers--;
                             if (remainingTransfers >= 0) {
                                 // Find profile entry for next leg
-                                let nextProfile = profile[leg.exit.stop];
+                                let nextProfile = profile[leg.arr.stop];
                                 let i = nextProfile.length-1; let found = false;
                                 while (i >= 0 && !found) {
                                     let departure = nextProfile[i].enterConnections[remainingTransfers].dep;
-                                    let walkingDistance = this.getWalkingDistance(leg.exit.stop, departure.stop);
-                                    if (departure.time >= leg.exit.time + walkingDistance) {
+                                    let walkingDistance = this.getWalkingDistance(leg.arr.stop, departure.stop);
+                                    if (departure.time >= leg.arr.time + walkingDistance) {
                                         found = true;
                                         let footpath = {
-                                            dep: currentEntry.exitConnections[remainingTransfers + 1].arr.stop,
-                                            arr: nextProfile[i].enterConnections[remainingTransfers].dep.stop,
+                                            dep: currentEntry.exitConnections[remainingTransfers + 1].arr,
+                                            arr: nextProfile[i].enterConnections[remainingTransfers].dep,
                                             dur: walkingDistance
                                         };
                                         journey.legs.push(footpath);
@@ -319,12 +319,12 @@ class CSA {
                             }
                         }
                         // Add last footpath if necessary
-                        if (journey.legs[journey.legs.length-1].exit.stop !== target) {
-                            let lastStop = journey.legs[journey.legs.length-1].exit.stop;
-                            let walkingDistance = this.getWalkingDistance(lastStop, target);
+                        if (journey.legs[journey.legs.length-1].arr.stop !== target) {
+                            let dep = journey.legs[journey.legs.length-1].arr;
+                            let walkingDistance = this.getWalkingDistance(dep.stop, target);
                             let footpath = {
-                                dep: lastStop,
-                                arr: target,
+                                dep: dep,
+                                arr: {stop: target, time: dep.time + walkingDistance},
                                 dur: walkingDistance
                             };
                             journey.legs.push(footpath);
