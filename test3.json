@@ -1,0 +1,28 @@
+{
+  "stops": ["a1", "a2", "a3", "a4", "a5", "b1", "b2", "b3", "b4", "c1", "c2"],
+  "connections": [
+    {"dep": {"stop": "a1", "time": 1}, "arr": {"stop": "a2", "time": 2}, "tripId": "a"},
+    {"dep": {"stop": "a2", "time": 3}, "arr": {"stop": "a3", "time": 4}, "tripId": "a"},
+    {"dep": {"stop": "a3", "time": 6}, "arr": {"stop": "a4", "time": 7}, "tripId": "a"},
+    {"dep": {"stop": "a4", "time": 8}, "arr": {"stop": "a5", "time": 9}, "tripId": "a"},
+    {"dep": {"stop": "b1", "time": 1}, "arr": {"stop": "b2", "time": 2}, "tripId": "b"},
+    {"dep": {"stop": "b2", "time": 3}, "arr": {"stop": "b3", "time": 4}, "tripId": "b"},
+    {"dep": {"stop": "b3", "time": 5}, "arr": {"stop": "b4", "time": 6}, "tripId": "b"},
+    {"dep": {"stop": "c1", "time": 3}, "arr": {"stop": "c2", "time": 4}, "tripId": "c"}
+  ],
+  "footpaths": [
+    {"stop1": "a1", "stop2": "a1", "dur": 0},
+    {"stop1": "a2", "stop2": "a2", "dur": 0},
+    {"stop1": "a3", "stop2": "a3", "dur": 0},
+    {"stop1": "a4", "stop2": "a4", "dur": 0},
+    {"stop1": "a5", "stop2": "a5", "dur": 0},
+    {"stop1": "b1", "stop2": "b1", "dur": 0},
+    {"stop1": "b2", "stop2": "b2", "dur": 0},
+    {"stop1": "b3", "stop2": "b3", "dur": 0},
+    {"stop1": "b4", "stop2": "b4", "dur": 0},
+    {"stop1": "c1", "stop2": "c1", "dur": 0},
+    {"stop1": "c2", "stop2": "c2", "dur": 0},
+    {"stop1": "a2", "stop2": "b2", "dur": 0.5},
+    {"stop1": "b3", "stop2": "a5", "dur": 2}
+  ]
+}
