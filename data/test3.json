@@ -22,7 +22,7 @@
     {"stop1": "b4", "stop2": "b4", "dur": 0},
     {"stop1": "c1", "stop2": "c1", "dur": 0},
     {"stop1": "c2", "stop2": "c2", "dur": 0},
-    {"stop1": "a2", "stop2": "b2", "dur": 0.5},
+    {"stop1": "a2", "stop2": "b2", "dur": 1},
     {"stop1": "b3", "stop2": "a5", "dur": 2}
   ]
 }
