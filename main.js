@@ -44,7 +44,7 @@ class CSA {
      */
     // TODO make this async/await
     // TODO and bring to new class
-    getWalkingDistance(dep, arr) {
+    async getWalkingDistance(dep, arr) {
         let result = Infinity;
         this.footpaths.forEach(fp => {
             if ((fp.stop1 === dep && fp.stop2 === arr) || (fp.stop1 === arr && fp.stop2 === dep)) {
@@ -123,7 +123,7 @@ class CSA {
      * @param target: string
      * @param maxLegs: int
      */
-    calculateProfile(target, maxLegs) {
+    async calculateProfile(target, maxLegs) {
         // For all stops x do S[x] <- {(Inf, (Inf, ..., Inf), (null, ..., null), (null, ..., null)}
         // TODO stops must be added on the fly (view as "stream", "successor" instead of big array) (https://github.com/RubenVerborgh/AsyncIterator)
         // TODO can footpaths be held in profile data structure? Eg if calculating walk distance is very expensive
@@ -143,10 +143,10 @@ class CSA {
         });
 
         // For connections c decreasing by c_dep_time do
-        this.sortedConnections.forEach(connection => {
+        await this.sortedConnections.forEach(async connection => {
             // t1 <- c_arr_time + D[c_arr_stop]
             // (calculate time for getting off here and walking to the target)
-            let x = connection.arr.time + this.getWalkingDistance(connection.arr.stop, target);
+            let x = connection.arr.time + await this.getWalkingDistance(connection.arr.stop, target);
             let walkTime = Array(maxLegs).fill(x);
 
             // t2 <- T[c_trip]
@@ -170,7 +170,7 @@ class CSA {
             // (c_dep_time, Tc) can only be dominated by the last entry of the profile,
             // as the profile is sorted by descending departure time
             let depProfile = profile[connection.dep.stop];
-            let earliestProfileEntry = depProfile[depProfile.length-1];
+            let earliestProfileEntry = depProfile[depProfile.length - 1];
             let dominated = earliestProfileEntry.depTime === connection.dep.time;
             for (let i = 0; i < earliestProfileEntry.arrTimes.length; i++) {
                 dominated = dominated && earliestProfileEntry.arrTimes[i] <= connectionMinTimes[i];
@@ -231,13 +231,17 @@ class CSA {
                         // If the new departure time is equal, update the profile entry
                         // Else, insert a new entry
                         if (FPDepEarliestEntry.depTime !== depTime) {
-                            FPDepProfile.push({depTime: depTime, arrTimes: minVector,
+                            FPDepProfile.push({
+                                depTime: depTime, arrTimes: minVector,
                                 enterConnections: enterConnections,
-                                exitConnections: exitConnections});
+                                exitConnections: exitConnections
+                            });
                         } else {
-                            FPDepProfile[FPDepProfile.length - 1] = {depTime: depTime, arrTimes: minVector,
+                            FPDepProfile[FPDepProfile.length - 1] = {
+                                depTime: depTime, arrTimes: minVector,
                                 enterConnections: enterConnections,
-                                exitConnections: exitConnections};
+                                exitConnections: exitConnections
+                            };
                         }
                     }
                 });
@@ -277,9 +281,9 @@ class CSA {
      * @param target: string
      * @param depTime: int
      */
-    extractJourneys(profile, source, target, depTime) {
+    async extractJourneys(profile, source, target, depTime) {
         let journeys = [];
-        profile[source].forEach(entry => {
+        await profile[source].forEach(async entry => {
             if (entry.depTime >= depTime) {
                 let bestArrTime = Infinity;
                 for (let transfers = 0; transfers < entry.arrTimes.length; transfers++) {
@@ -289,7 +293,8 @@ class CSA {
                             depTime: entry.depTime,
                             arrTime: entry.arrTimes[transfers],
                             transfers: transfers,
-                            legs: []};
+                            legs: []
+                        };
                         bestArrTime = entry.arrTimes[transfers];
 
                         let currentEntry = entry;
@@ -309,10 +314,11 @@ class CSA {
                             if (remainingTransfers >= 0) {
                                 // Find profile entry for next leg
                                 let nextProfile = profile[leg.arr.stop];
-                                let i = nextProfile.length-1; let found = false;
+                                let i = nextProfile.length - 1;
+                                let found = false;
                                 while (i >= 0 && !found) {
                                     let departure = nextProfile[i].enterConnections[remainingTransfers].dep;
-                                    let walkingDistance = this.getWalkingDistance(leg.arr.stop, departure.stop);
+                                    let walkingDistance = await this.getWalkingDistance(leg.arr.stop, departure.stop);
                                     if (departure.time >= leg.arr.time + walkingDistance) {
                                         found = true;
                                         let footpath = {
@@ -328,9 +334,9 @@ class CSA {
                             }
                         }
                         // Add last footpath if necessary
-                        if (journey.legs[journey.legs.length-1].arr.stop !== target) {
-                            let dep = journey.legs[journey.legs.length-1].arr;
-                            let walkingDistance = this.getWalkingDistance(dep.stop, target);
+                        if (journey.legs[journey.legs.length - 1].arr.stop !== target) {
+                            let dep = journey.legs[journey.legs.length - 1].arr;
+                            let walkingDistance = await this.getWalkingDistance(dep.stop, target);
                             let footpath = {
                                 dep: dep,
                                 arr: {stop: target, time: dep.time + walkingDistance},
@@ -348,6 +354,8 @@ class CSA {
 }
 
 let csa = new CSA('test3.json');
-let profile = csa.calculateProfile("a5", 5);
-let journeys = csa.extractJourneys(profile, "a1", "a5", 0);
-console.log("Done");
+csa.calculateProfile("a5", 5).then(profile => {
+    csa.extractJourneys(profile, "a1", "a5", 0).then(journeys => {
+        console.log(JSON.stringify(journeys, null, 4));
+    });
+});
