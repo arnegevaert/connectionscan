@@ -5,8 +5,9 @@ const CSA = require('./lib/CSA');
 
 let wdc = new WalkingDistanceCalculator('data/test3.json');
 let cp = new JSONConnectionProvider('data/test3.json');
+let enableISDCaches = false;
 
-let csa = new CSA(cp, wdc);
+let csa = new CSA(cp, wdc, enableISDCaches);
 let je = new JourneyExtractor(csa);
 
 csa.calculateProfile("a5", 5).then(profile => {
