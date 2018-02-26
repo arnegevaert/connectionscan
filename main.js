@@ -12,23 +12,24 @@ let enableISDCaches = false;
 let testCSA = new CSA(testCP, wdc, enableISDCaches);
 let testJE = new JourneyExtractor(testCSA);
 
-/*testCSA.calculateProfile("a5", 5).then(profile => {
+testCSA.calculateProfile("a5", 5).then(profile => {
     testJE.extractJourneys(profile, "a1", "a5", 0).then(journeys => {
         console.log(JSON.stringify(journeys, null, 4));
         console.log(JSON.stringify(testCSA.getCacheUsageReport(), null, 4));
     });
-});*/
+});
 
-let jsonCP = new JSONConnectionProvider('data/lc_test_data.jsonld');
+/*let jsonCP = new JSONConnectionProvider('data/lc_test_data.jsonld');
 let infinityISDC = new InfinityISDCalculator();
 let csa = new CSA(jsonCP, infinityISDC, false);
 let je = new JourneyExtractor(csa);
 
-let kortrijk = "https://irail.be/stations/NMBS/008896008";
-let gentSP = "https://irail.be/stations/NMBS/008892007";
+let kortenberg = "https://irail.be/stations/NMBS/008811254";
+let leuven = "https://irail.be/stations/NMBS/008833001";
+let depTime = new Date("2018-02-08T08:50:00.000Z");
 
-csa.calculateProfile(kortrijk, 5).then(profile => {
-    je.extractJourneys(profile, kortrijk, gentSP, new Date("2018-02-09T08:50:00.000Z")).then(journeys => {
+csa.calculateProfile(kortenberg, 5).then(profile => {
+    je.extractJourneys(profile, kortenberg, leuven, depTime).then(journeys => {
         console.log(JSON.stringify(journeys, null, 4));
-    })
-});
+    });
+});*/
