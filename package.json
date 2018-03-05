@@ -4,7 +4,8 @@
   "description": "Implementation of Connection Scan algorithm",
   "main": "main.js",
   "dependencies": {
-    "asynciterator": "^1.1.0"
+    "asynciterator": "^1.1.0",
+    "ldfetch": "0.0.10"
   },
   "devDependencies": {},
   "scripts": {
