@@ -1,6 +1,6 @@
-const InfinityISDCalculator = require('./lib/InfinityISDCalculator');
-const IRailConnectionProvider = require('./lib/IRailConnectionProvider');
-const CSA = require('./lib/CSA');
+const InfinityISDCalculator = require("./lib/InfinityISDCalculator");
+const IRailConnectionProvider = require("./lib/IRailConnectionProvider");
+const CSA = require("./lib/CSA");
 
 let stop1 = "http://irail.be/stations/NMBS/008896008"; // Kortrijk
 let stop2 = "http://irail.be/stations/NMBS/008812005"; // Brussel-Noord
