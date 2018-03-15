@@ -6,7 +6,8 @@
   "dependencies": {
     "asynciterator": "^1.1.0",
     "ldfetch": "0.0.10",
-    "n3": "^0.11.2"
+    "n3": "^0.11.2",
+    "uritemplate": "^0.3.4"
   },
   "devDependencies": {},
   "scripts": {

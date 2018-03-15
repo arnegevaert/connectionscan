@@ -1,5 +1,5 @@
-const InfinityISDCalculator = require("./lib/InfinityISDCalculator");
-const IRailConnectionProvider = require("./lib/IRailConnectionProvider");
+const InfinityISDCalculator = require("./lib/ISDCalculators/InfinityISDCalculator");
+const IRailConnectionProvider = require("./lib/ConnectionProviders/LinkedConnections/LCConnectionProvider");
 const CSA = require("./lib/CSA");
 
 let stop1 = "http://irail.be/stations/NMBS/008896008"; // Kortrijk
