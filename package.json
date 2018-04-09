@@ -1,9 +1,18 @@
 {
   "name": "connectionscan",
+  "lsd:module": "http://example.org/connectionscan",
+  "lsd:components": "components/components.jsonld",
+  "lsd:contexts": {
+    "https://linkedsoftwaredependencies.org/contexts/comunica-actor-init-hello-world.jsonld": "components/context.jsonld"
+  },
   "version": "1.0.0",
   "description": "Implementation of Connection Scan algorithm",
   "main": "main.js",
   "dependencies": {
+    "@comunica/bus-init": "^1.0.0",
+    "@comunica/core": "^1.0.0",
+    "@comunica/runner": "^1.0.0",
+    "@comunica/runner-cli": "^1.0.0",
     "asynciterator": "^1.1.0",
     "ldfetch": "0.0.10",
     "n3": "^0.11.2",

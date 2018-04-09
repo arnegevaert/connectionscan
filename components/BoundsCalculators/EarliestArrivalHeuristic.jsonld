@@ -1,0 +1,43 @@
+{
+  "@id": "connectionscan/bounds-calculators/earliest-arrival-heuristic",
+  "components": [
+    {
+      "@id": "connectionscan/BoundsCalculators/EarliestArrivalHeuristic",
+      "@type": "Class",
+      "requireElement": "EarliestArrivalHeuristic",
+      "parameters": [
+        {
+          "@id": "ex:baseUrl",
+          "comment": "A base URL to get connections from"
+        },
+        {
+          "@id": "ex:ISDCalculator",
+          "comment": "Interstop distance calculator"
+        },
+        {
+          "@id": "ex:ldfetch",
+          "comment": "LDFetch instance to get data"
+        }
+      ],
+      "constructorArguments": [
+        {
+          "extends": "cbi:Actor/Init/constructorArgumentsObject",
+          "fields": [
+            {
+              "keyRaw": "baseUrl",
+              "value": "ex:baseUrl"
+            },
+            {
+              "keyRaw": "ISDCalculator",
+              "value": "ex:ISDCalculator"
+            },
+            {
+              "keyRaw": "ldfetch",
+              "value": "ex:ldfetch"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

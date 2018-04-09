@@ -1,0 +1,9 @@
+{
+  "@context": "example.org/context.jsonld",
+  "@id": "connectionscan",
+  "@type": "Module",
+  "requireName": "connectionscan",
+  "import": [
+    "BoundsCalculators/EarliestArrivalHeuristic"
+  ]
+}
